@@ -16,6 +16,7 @@
 - Transformers
 - Diffusion models
 - Applications on image analysis and natural language processing
+
 Participants will complete a number of computer exercises using Python and PyTorch.
 
 ## Prerequisites
