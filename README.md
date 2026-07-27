@@ -1,1 +1,40 @@
-# DM2026-Deep-Learning-with-Python
+# Data Matters Workshop: Deep Learning with Python
+
+## Overview
+
+**Summary.** Deep learning has become the engine behind today’s most transformative AI systems, powering breakthroughs in computer vision, natural language processing, speech recognition, scientific modeling, and countless real‑world applications. This course introduces the core ideas that make deep learning such a pivotal technology. The course minimizes heavy mathematics and instead focuses on intuition, principles, and hands‑on practice. Python and the PyTorch framework will serve as the primary tools for building and experimenting with neural networks. Through guided exercises, you will implement and train models for tabular data, images, and text, gaining experience with the workflows that underpin modern AI development. By the end of the course, you will understand the foundations of deep learning, know how to build and train models in PyTorch, and be prepared to explore or apply AI techniques in your own projects.
+
+**Why This Course.** Deep learning now sits at the heart of modern AI, enabling systems that can interpret images, language, and complex data with remarkable accuracy. This course gives you a clear, accessible look at why these methods work and how they power today’s AI tools. You’ll explore the key architectures behind deep learning and gain hands-on experience building your own models in PyTorch. By the end, you’ll understand the foundations that make deep learning so influential and have practical skills to start creating AI solutions yourself.
+
+**What Will Participants Learn.** The course will focus on the following topics:
+- Neural networks and deep neural networks
+- Training and evaluation of deep neural networks
+- PyTorch
+- Convolutional and recurrent neural networks
+- Autoencoders
+- Transfer learning
+- Transformers
+- Diffusion models
+- Applications on image analysis and natural language processing
+Participants will complete a number of computer exercises using Python and PyTorch.
+
+## Prerequisites
+This course will assume an understanding of statistics at the undergraduate level and programming experience with Python to get full benefits from the class.
+
+- Make sure you have a Google account to login into some resources (e.g., personal Gmail)
+- Make sure that you are able to login to Google Colab and Google Drive. We will be posting materials there together with this repo.
+- Go over this basic [Google Colab Tutorial](https://colab.research.google.com/drive/1IArZqPbz3vafr67YUiKHh2U0Kvfifwdt?usp=sharing)
+
+## Agenda - Day 1
+- Start: 9:30 am
+- Break: 10:45 am - 11:00 am
+- Lunch Break: 12:00 pm - 1:20 pm
+- Break: 2:15 pm - 2:30 pm
+- End: 3:30 pm
+
+## Agenda - Day 2
+- Start: 9:30 am
+- Break: 10:45 am - 11:00 am
+- Lunch Break: 12:00 pm - 1:20 pm
+- Break: 2:15 pm - 2:30 pm
+- End: 3:30 pm
