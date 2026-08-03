@@ -27,15 +27,23 @@ This course will assume an understanding of statistics at the undergraduate leve
 - Go over this basic [Google Colab Tutorial](https://colab.research.google.com/drive/1IArZqPbz3vafr67YUiKHh2U0Kvfifwdt?usp=sharing)
 
 ## Agenda - Day 1
-- Start: 9:30 am
-- Break: 10:45 am - 11:00 am
-- Lunch Break: 12:00 pm - 1:20 pm
-- Break: 2:15 pm - 2:30 pm
-- End: 3:30 pm
+
+- 9:30 - 9:45 am: Introduction and Course Overview [[Slides](Slides/Intro2AI.pdf)]
+- 9:45 - 10:45 am: What are AI and Machine Learning
+- 10:45 - 11:00 am: **Break**
+- 11:00 - 12:00 pm: From Classical to Deep Learning [[Slides](Slides/FromClassical2DL.pdf)]
+- 12:00 - 1:20 pm: **Lunch Break**
+- 1:20 - 2:15 pm: Building an MLP Demo [[Slides](Slides/BuildingAnMLP.pdf) | [MLP Demo](Src/Gait-MLP.ipynb)]
+- 2:15 - 2:30 pm: **Break**
+- 2:30 - 3:30 pm: Basic Architectures [[Slides](Slides/BasicArchitectures.pdf)]
 
 ## Agenda - Day 2
-- Start: 9:30 am
-- Break: 10:45 am - 11:00 am
-- Lunch Break: 12:00 pm - 1:20 pm
-- Break: 2:15 pm - 2:30 pm
-- End: 3:30 pm
+
+- 9:30 - 10:00 am: Building a CNN Demo
+- 10:00 - 10:45 am: Transfer Learning [[Slides](Slides/TransferLearning.pdf)]
+- 10:45 - 11:00 am: **Break**
+- 11:00 - 12:00 pm: Regularization [[Slides](Slides/Regularization.pdf)]
+- 12:00 - 1:20 pm: **Lunch Break**
+- 1:20 - 2:15 pm: Advanced Architectures [[Slides](Slides/AdvancedArchitectures.pdf)]
+- 2:15 - 2:30 pm: **Break**
+- 2:30 - 3:30 pm: Robustness [[Slides](Slides/Robustness.pdf)]
