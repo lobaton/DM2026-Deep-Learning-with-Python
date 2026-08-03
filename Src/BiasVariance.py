@@ -261,9 +261,9 @@ def _(N_iter, degList, getFittedModels, mse, np, plt, x_1, y_model):
             # Plot the true underlying function
             plt.plot(x_1, y_model, 'k-')
             if(_i==0):
-                plt.title('N = {}'.format(_N))
+                plt.title('Degree = {}'.format(_deg))
             if(_degCt==0):
-                plt.ylabel('Degree = {}'.format(_deg))
+                plt.ylabel('N = {}'.format(_N))
             plt.grid(True)
 
             txt = txt + ' | Deg {}: (Bias , Variance) = ({:2.5f} , {:2.5f})'.format(
