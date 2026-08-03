@@ -80,7 +80,7 @@ def _(f, np, plt, x_test, x_train, y_test, y_train):
     ax.legend(handles, labels)
     plt.xlabel('x')
     plt.ylabel('y')
-    plt.show()
+    plt.gca()
     return
 
 
@@ -155,7 +155,7 @@ def _(f, fit, mse, np, plt, predict, x_test, x_train, y_test, y_train):
     # Plot true model, fitted model, and observed data
     plt.plot(x_1, y_model, 'k-', x_1, _y, 'b-', x_train, y_train, 'k.', x_test, y_test, 'r.')
     plt.legend(['True Model', 'Prediction', 'Training', 'Test'])
-    plt.show()
+    plt.gca()
     return x_1, y_model
 
 
@@ -221,7 +221,7 @@ def _(f, fit, mse, np, plt, predict, rng, stdNoise, x_1, y_model):
             )
         )
 
-    plt.show()
+    plt.gca()
     return N_iter, degList, getFittedModels
 
 
@@ -237,21 +237,22 @@ def _(mo):
 def _(N_iter, degList, getFittedModels, mse, np, plt, x_1, y_model):
     N_samples_List = (10, 20, 50, 100)
 
-    for _N in N_samples_List:
-        fig = plt.figure()
-        fig.set_figwidth(12)
-        fig.set_figheight(2)
+    fig = plt.figure()
+    fig.set_figwidth(12)
+    fig.set_figheight(2*len(N_samples_List))
+
+    for _i,_N in enumerate(N_samples_List):
 
         txt = 'N = {:3d}'.format(_N)
 
         for _degCt, _deg in enumerate(degList):
             _y_arr, _y_mean, _y_var = getFittedModels(N_iter, _N, x_1, _deg)
 
-            plt.subplot(1, len(degList), _degCt + 1)
+            plt.subplot(len(N_samples_List), len(degList), _degCt + 1 + _i*len(degList))
             plt.plot(x_1, _y_arr.T, '-', color=[0.7, 0.7, 0.7])
 
             # Set y-axis limits using a tuple, not a list
-            plt.ylim((-1, 1))
+            plt.ylim((-0.75, 0.75))
 
             # Plot mean prediction and +/- one standard deviation
             plt.plot(x_1, _y_mean, 'b-', x_1, _y_mean - np.sqrt(_y_var), 'b--',
@@ -259,13 +260,18 @@ def _(N_iter, degList, getFittedModels, mse, np, plt, x_1, y_model):
 
             # Plot the true underlying function
             plt.plot(x_1, y_model, 'k-')
-            plt.title('N = {}, Degree = {}'.format(_N, _deg))
+            if(_i==0):
+                plt.title('N = {}'.format(_N))
+            if(_degCt==0):
+                plt.ylabel('Degree = {}'.format(_deg))
+            plt.grid(True)
 
             txt = txt + ' | Deg {}: (Bias , Variance) = ({:2.5f} , {:2.5f})'.format(
                 _deg, mse(y_model, _y_mean), np.mean(_y_var))
 
         print(txt)
-        plt.show()
+
+    plt.gca()
     return
 
 
