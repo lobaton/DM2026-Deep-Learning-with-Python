@@ -31,7 +31,7 @@ This course will assume an understanding of statistics at the undergraduate leve
 - 9:30 - 9:45 am: Introduction and Course Overview [[Slides](Slides/Intro2AI.pdf)]
 - 9:45 - 10:45 am: What are AI and Machine Learning
 - 10:45 - 11:00 am: **Break**
-- 11:00 - 12:00 pm: From Classical to Deep Learning [[Slides](Slides/FromClassical2DL.pdf)]
+- 11:00 - 12:00 pm: From Classical to Deep Learning [[Slides](Slides/FromClassical2DL.pdf) | [Bias Variance Demo](https://molab.marimo.io/github/lobaton/DM2026-Deep-Learning-with-Python/blob/main/Src/BiasVariance.py) | [Logistic Regression Demo](https://molab.marimo.io/github/lobaton/DM2026-Deep-Learning-with-Python/blob/main/Src/LogisticRegression.py) | [Classification with MLP Demo](https://molab.marimo.io/github/lobaton/DM2026-Deep-Learning-with-Python/blob/main/Src/ClassificationMLP.py)]
 - 12:00 - 1:20 pm: **Lunch Break**
 - 1:20 - 2:15 pm: Building an MLP Demo [[Slides](Slides/BuildingAnMLP.pdf) | [MLP Demo](Src/Gait-MLP.ipynb)]
 - 2:15 - 2:30 pm: **Break**
