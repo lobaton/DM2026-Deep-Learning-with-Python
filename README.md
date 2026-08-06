@@ -33,9 +33,9 @@ This course will assume an understanding of statistics at the undergraduate leve
 - 10:45 - 11:00 am: **Break**
 - 11:00 - 12:00 pm: From Classical to Deep Learning [[Slides](Slides/FromClassical2DL.pdf) | [Bias Variance Demo](https://molab.marimo.io/github/lobaton/DM2026-Deep-Learning-with-Python/blob/main/src-marimo/BiasVariance.py) | [Logistic Regression Demo](https://molab.marimo.io/github/lobaton/DM2026-Deep-Learning-with-Python/blob/main/src-marimo/LogisticRegression.py) | [Classification with MLP Demo](https://molab.marimo.io/github/lobaton/DM2026-Deep-Learning-with-Python/blob/main/src-marimo/ClassificationMLP.py)]
 - 12:00 - 1:20 pm: **Lunch Break**
-- 1:20 - 2:15 pm: Basic Architectures: CNN
+- 1:20 - 2:15 pm: Basic Architectures: CNN [[Slides](Slides/BasicArchitectures.pdf)]
 - 2:15 - 2:30 pm: **Break**
-- 2:30 - 3:30 pm: Basic Architectures: RNN & AE [[Slides](Slides/BasicArchitectures.pdf) | [Anomaly Detection Demo](https://molab.marimo.io/github/lobaton/DM2026-Deep-Learning-with-Python/blob/main/src-marimo/Autoencoder.py)]
+- 2:30 - 3:30 pm: Basic Architectures: RNN & AE  [[Anomaly Detection Demo](https://molab.marimo.io/github/lobaton/DM2026-Deep-Learning-with-Python/blob/main/src-marimo/Autoencoder.py)]
 
 ## Agenda - Day 2
 
