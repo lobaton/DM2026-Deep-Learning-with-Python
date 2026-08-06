@@ -7,14 +7,236 @@ app = marimo.App(width="medium")
 @app.cell
 def _():
     import marimo as mo
-    import helperFcns_ae as hf
     import matplotlib.pyplot as plt
     import numpy as np
     import torch
     import wfdb
     import os
+    from sklearn.manifold import TSNE
+    import pandas as pd
+    from torch import nn
+    from sklearn.metrics import roc_auc_score, roc_curve
 
-    return hf, mo, np, os, plt, torch, wfdb
+    return TSNE, mo, nn, np, os, pd, plt, roc_auc_score, roc_curve, torch, wfdb
+
+
+@app.cell(hide_code=True)
+def _(TSNE, nn, np, os, pd, plt, roc_auc_score, roc_curve, torch, wfdb):
+    # HELPER FUNCTIONS
+
+    # Function for loading data
+    def loadData(data_dir, recordID):
+        # Loading a record
+        recordName = os.path.join(data_dir,str(recordID))
+        sigs, fields = wfdb.rdsamp(recordName)
+
+        # Loading the annotation
+        ann = wfdb.io.rdann(recordName,'atr')
+
+        # Extracting beat locations and labels (normal vs. other)
+        beatLoc = ann.sample[1:]
+        tmp = ann.symbol[1:]
+        idx = [ind for ind, ele in enumerate(tmp) if ele=='N' or ele=='.']
+        beatLab = np.ones(len(beatLoc))
+        beatLab[idx] = 0
+
+        # Extracting the first signals
+        sig = sigs[:,0]
+
+        perAbnormal = 100*sum(beatLab)/len(beatLab)
+        print('[Record {:d}] Normal = {:4.1f} % | Abnormal = {:4.1f} %'.format(recordID,
+            100-perAbnormal,perAbnormal))
+
+        return sig, beatLoc, beatLab
+
+
+    # Function for extracting windowed data
+    def getDataArr(sig,beatLoc,beatLab,winSzHalf):
+        xArr = []
+        yArr = []
+        for k,loc in enumerate(beatLoc):
+            if((loc>winSzHalf-1) and (loc<len(sig)-winSzHalf-1)):
+                xArr.append(sig[loc-winSzHalf:loc+winSzHalf])
+                yArr.append(beatLab[k])
+        xArr = np.array(xArr)
+        yArr = np.array(yArr)>0
+
+        return xArr, yArr
+
+    # Function for visualizing the high-dimensional data
+    def tsne_plot(xData,yData):
+        X_embedded = TSNE(n_components=2, learning_rate='auto',
+                        init='random',perplexity=15).fit_transform(xData)
+        zDf = pd.DataFrame(data=X_embedded, columns=['z1', 'z2'])
+
+        x = zDf['z1'][yData==0]
+        y = zDf['z2'][yData==0]
+        plt.scatter(x,y,color='b')
+        x = zDf['z1'][yData==1]
+        y = zDf['z2'][yData==1]
+        plt.scatter(x,y,color='r')
+        plt.xlabel('z1')
+        plt.ylabel('z2')
+
+    # CNN-Based Encoder
+    class Encoder(nn.Module):
+        def __init__(self, encoded_space_dim, winSzHalf):
+            super().__init__()
+        
+            ### Convolutional section
+            self.encoder_cnn = nn.Sequential(
+                nn.Conv1d(1, 8, 5, stride=2, padding=2),
+                nn.ReLU(True),
+                nn.Conv1d(8, 16, 5, stride=2, padding=2),
+                nn.BatchNorm1d(16),
+                nn.ReLU(True),
+                nn.Conv1d(16, 32, 5, stride=2, padding=2),
+                nn.ReLU(True)
+            )
+
+            intSz = int((winSzHalf/4))
+        
+            ### Flatten layer
+            self.flatten = nn.Flatten(start_dim=1)
+            ### Linear section
+            self.encoder_lin = nn.Sequential(
+                nn.Linear(intSz * 32, 128),
+                nn.ReLU(True),
+                nn.Linear(128, encoded_space_dim)
+            )
+        
+        def forward(self, x):
+            x = self.encoder_cnn(x)
+            x = self.flatten(x)
+            x = self.encoder_lin(x)
+            return x
+    
+    # CNN-Based Decoder
+    class Decoder(nn.Module):
+        def __init__(self, encoded_space_dim, winSzHalf):
+            super().__init__()
+
+            intSz = int((winSzHalf/4))
+
+            self.decoder_lin = nn.Sequential(
+                nn.Linear(encoded_space_dim, 128),
+                nn.ReLU(True),
+                nn.Linear(128, intSz * 32),
+                nn.ReLU(True)
+            )
+
+            self.unflatten = nn.Unflatten(dim=1, unflattened_size=(32, intSz))
+
+            self.decoder_conv = nn.Sequential(
+                nn.ConvTranspose1d(32, 16, 5, stride=2, padding=2, output_padding=1),
+                nn.BatchNorm1d(16),
+                nn.ReLU(True),
+                nn.ConvTranspose1d(16, 8, 5, stride=2, padding=2, output_padding=1),
+                nn.BatchNorm1d(8),
+                nn.ReLU(True),
+                nn.ConvTranspose1d(8, 1, 5, stride=2, padding=2, output_padding=1)
+            )
+        
+        def forward(self, x):
+            x = self.decoder_lin(x)
+            x = self.unflatten(x)
+            x = self.decoder_conv(x)
+            return x
+
+    # Function for training model for an epoch
+    def train_epoch(encoder, decoder, device, data, loss_fn, optimizer):
+        # Set train mode for both the encoder and the decoder
+        encoder.train()
+        decoder.train()
+
+        # Move tensor to the proper device
+        data_batch = data.to(device)
+        # Encode data
+        encoded_data = encoder(data_batch)
+        # Decode data
+        decoded_data = decoder(encoded_data)
+        # Evaluate loss
+        loss = loss_fn(decoded_data, data_batch)
+        # Backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        train_loss = loss.detach().cpu().numpy()
+
+        return train_loss
+
+    # Function for converting numpy batch to tensor
+    def get_tensor(xData):
+        sz = xData.shape
+        return torch.tensor(xData.reshape([sz[0],1,sz[1]]),dtype=torch.float)
+
+    # Function for doing a full training of a model
+    def train_model(encoder,decoder,device,loss_fn,optim,xTrain,num_epochs):
+       xTrain_Tensor = get_tensor(xTrain)
+       loss_hist = []
+
+       for epoch in range(num_epochs):
+          train_loss = train_epoch(encoder,decoder,device,xTrain_Tensor,loss_fn,optim)
+          if(np.mod(epoch+1,50)==0):
+             print('EPOCH {:3d}/{} \t train loss = {:.4f}'.format(epoch + 1, num_epochs,train_loss))
+          loss_hist.append(train_loss)
+
+       return loss_hist
+
+    # Function for evaluating the encode and decoder
+    def eval_encdec(encoder, decoder, device, xData):
+        # Set evaluation mode for encoder
+        encoder.eval()
+        decoder.eval()
+        with torch.no_grad(): # No need to track the gradients
+            # Getting tensor
+            xTensor = get_tensor(xData)
+            # Move tensor to the proper device
+            data_batch = xTensor.to(device)
+            # Encode data
+            encoded_data = encoder(data_batch)
+            # Decode data
+            decoded_data = decoder(encoded_data)
+
+        enc_data = encoded_data.detach().cpu().numpy()
+        dec_data = np.squeeze(decoded_data.detach().cpu().numpy())
+    
+        return enc_data, dec_data
+
+    # Generates an ROC curve
+    def plot_ROC(encoder,decoder,device,xData,yData):
+        [z,xHat] = eval_encdec(encoder,decoder,device,xData)
+        yScore = np.mean(np.power(xHat-xData,2),axis=1)
+
+        fpr, tpr, thresholds = roc_curve(yData, yScore)
+        plt.plot(fpr, tpr)
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+
+        auc = roc_auc_score(yData,yScore)
+
+        return auc
+
+    # Function for splitting data into training and testing
+    def splitData(xArr,yArr,perTrain):
+        idx = int(np.round(xArr.shape[0]*perTrain))
+        xTrain = xArr[0:idx,:]
+        yTrain = yArr[0:idx]
+        xTest = xArr[idx:,]
+        yTest = yArr[idx:]
+
+        return xTrain,yTrain,xTest,yTest
+
+    return (
+        Decoder,
+        Encoder,
+        eval_encdec,
+        getDataArr,
+        loadData,
+        plot_ROC,
+        train_model,
+        tsne_plot,
+    )
 
 
 @app.cell(hide_code=True)
@@ -68,7 +290,7 @@ def _(mo):
 
 
 @app.cell
-def _(data_dir, hf, plt, winSzHalf_slider):
+def _(data_dir, getDataArr, loadData, plt, tsne_plot, winSzHalf_slider):
 
     # Specifying a list of records to process. We are picking a subset because some
     # of the records have more non-normal beats than normal (e.g., in the case that
@@ -80,10 +302,14 @@ def _(data_dir, hf, plt, winSzHalf_slider):
     winSzHalf = winSzHalf_slider.value
 
     # Loading one of the records
-    [_sig, _beatLoc, _beatLab] = hf.loadData(data_dir,recList[0])
+    [_sig, _beatLoc, _beatLab] = loadData(data_dir,recList[0])
+
+    sig = _sig
+    beatLoc = _beatLoc
+    beatLab = _beatLab
 
     # Converting continuous stream into windows around each heartbeat
-    _xArr, _yArr = hf.getDataArr(_sig,_beatLoc,_beatLab,winSzHalf)
+    _xArr, _yArr = getDataArr(_sig,_beatLoc,_beatLab,winSzHalf)
 
     # Plotting the data
     _f = plt.figure()
@@ -114,7 +340,7 @@ def _(data_dir, hf, plt, winSzHalf_slider):
 
     # Doing a scatter plot visualization of the raw data
     plt.subplot(1,3,3)
-    hf.tsne_plot(_xArr,_yArr)
+    tsne_plot(_xArr,_yArr)
     plt.axis('equal')
     plt.title('t-SNE Visualization')
     plt.legend(['Normal','Abnormal'])
@@ -144,7 +370,7 @@ def _(mo):
 
 
 @app.cell
-def _(d_latent_slider, hf, torch, winSzHalf):
+def _(Decoder, Encoder, d_latent_slider, torch, winSzHalf):
     # Defining the loss function
     loss_fn = torch.nn.MSELoss()
 
@@ -158,8 +384,8 @@ def _(d_latent_slider, hf, torch, winSzHalf):
     d_latent = d_latent_slider.value
 
     # Initializing encoder, decoder and optimizer
-    encoder = hf.Encoder(d_latent,winSzHalf)
-    decoder = hf.Decoder(d_latent,winSzHalf)
+    encoder = Encoder(d_latent,winSzHalf)
+    decoder = Decoder(d_latent,winSzHalf)
     params_to_optimize = [
         {'params': encoder.parameters()},
         {'params': decoder.parameters()}
@@ -234,13 +460,16 @@ def _(
     decoder,
     device,
     encoder,
-    hf,
+    eval_encdec,
+    getDataArr,
+    loadData,
     loss_fn,
     mo,
     optim,
     recList,
     rec_id_slider,
     train_button,
+    train_model,
     winSzHalf,
 ):
     # Skip this cell unless the Train button was pressed
@@ -248,21 +477,21 @@ def _(
 
     # Loading one of the records
     rec_id = rec_id_slider.value
-    [_sig, _beatLoc, _beatLab] = hf.loadData(data_dir,recList[rec_id])
+    [_sig, _beatLoc, _beatLab] = loadData(data_dir,recList[rec_id])
 
     # Converting continuous stream into windows around each heartbeat
-    xArr, yArr = hf.getDataArr(_sig,_beatLoc,_beatLab,winSzHalf)
+    xArr, yArr = getDataArr(_sig,_beatLoc,_beatLab,winSzHalf)
 
     # Specifying the number of epochs for training
     num_epochs = 200
 
     # Training the model
-    loss_hist = hf.train_model(encoder,decoder,device,loss_fn,optim,xArr,num_epochs)
+    loss_hist = train_model(encoder,decoder,device,loss_fn,optim,xArr,num_epochs)
 
     # Passing the data through the encoder and the decoder. z's
     # are the latent vector presentations and xHat is the
     # reconstructed signal.
-    [z,xHat] = hf.eval_encdec(encoder,decoder,device,xArr)
+    [z,xHat] = eval_encdec(encoder,decoder,device,xArr)
     return loss_hist, xArr, xHat, yArr, z
 
 
@@ -275,21 +504,21 @@ def _(mo):
 
 
 @app.cell
-def _(decoder, device, encoder, hf, plt, xArr, yArr, z):
+def _(decoder, device, encoder, plot_ROC, plt, tsne_plot, xArr, yArr, z):
     _f = plt.figure()
     _f.set_figwidth(12)
     _f.set_figheight(5)
 
     # Doing a scatter plot visualization of the raw data
     plt.subplot(1,2,1)
-    hf.tsne_plot(z,yArr)
+    tsne_plot(z,yArr)
     plt.xlabel('z1')
     plt.ylabel('z2')
     plt.title('t-SNE Visualization')
 
     # Plotting the ROC curve when using recnstruction error for classification
     plt.subplot(1,2,2)
-    auc = hf.plot_ROC(encoder,decoder,device,xArr,yArr)
+    auc = plot_ROC(encoder,decoder,device,xArr,yArr)
     plt.grid()
     plt.title("ROC Curve for Anomaly Det | AUC = {:1.3f}".format(auc))
 
