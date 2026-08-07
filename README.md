@@ -39,11 +39,12 @@ This course will assume an understanding of statistics at the undergraduate leve
 
 ## Agenda - Day 2
 
-- 9:30 - 10:00 am: Building a CNN Demo [[Slides](Slides/BuildingAnMLP.pdf) | [MLP Demo](Src/Gait-MLP.ipynb)]
+- 9:30 - 10:00 am: Demo - Building a CNN for Gait Recongition [[Slides](Slides/BuildingACNN.pdf) | [Starting Notebook for Colab](Src/Gait-MLP.ipynb) | [Planning in Gemini](https://share.gemini.google/sSBf06rbAUSE) | [Final Notebook](Src/Gait-MLP-Final.ipynb)]
 - 10:00 - 10:45 am: Transfer Learning [[Slides](Slides/TransferLearning.pdf)]
 - 10:45 - 11:00 am: **Break**
-- 11:00 - 12:00 pm: Regularization [[Slides](Slides/Regularization.pdf)]
+- 11:00 - 11:30 pm: Regularization [[Slides](Slides/Regularization.pdf)]
+- 11:30 - 12:00 pm: Advanced Architectures [[Slides](Slides/AdvancedArchitectures.pdf)]
 - 12:00 - 1:20 pm: **Lunch Break**
-- 1:20 - 2:15 pm: Advanced Architectures [[Slides](Slides/AdvancedArchitectures.pdf)]
+- 1:20 - 2:15 pm: Robustness [[Slides](Slides/Robustness.pdf)]
 - 2:15 - 2:30 pm: **Break**
-- 2:30 - 3:30 pm: Robustness [[Slides](Slides/Robustness.pdf)]
+- 2:30 - 3:30 pm: Demo - Building an ML Workflow with LabelbBox and Claude
